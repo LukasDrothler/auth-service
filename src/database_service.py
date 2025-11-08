@@ -42,18 +42,46 @@ class DatabaseService:
             logger.warning("Using empty database password since 'DB_PASSWORD' not set")
 
         logger.info("DatabaseService initialized. Trying to connect to database...")
+        if not self.db_connection_works():
+            logger.info("Database 'auth' does not exist. Creating and initializing...")
+            self.execute_init_db_sql()
+            logger.info("Database 'auth' created and schema initialized successfully.")
+
+        if not self.db_tables_exist():
+            logger.info("Database tables do not exist. Initializing schema...")
+            self.execute_init_db_sql()
+            logger.info("Database schema initialized successfully.")
+        
+        _test_connection = self.create_connection()
+        logger.info("Database connection successful")
+        _test_connection.close()
+
+
+    def db_connection_works(self) -> bool:
+        """Check if the 'auth' database exists"""
         try:
             _test_connection = self.create_connection()
-            logger.info("Database connection successful")
             _test_connection.close()
-        except mysql.connector.errors.ProgrammingError as err:
-            logger.info("Database 'auth' does not exist. Creating it...")
-            self.execute_init_db_sql()
-            logger.info("Database 'auth' created and schema initialized successfully. Trying to connect again...")
-            _test_connection = self.create_connection()
-            logger.info("Database connection successful")
-        
+            return True
+        except mysql.connector.errors.ProgrammingError:
+            return False
+            
 
+
+    def db_tables_exist(self) -> bool:
+        """Check if the required tables exist in the 'auth' database"""
+        _test_connection = self.create_connection()
+        try:
+            one_user = self.execute_query("SELECT * FROM user LIMIT 1;", connection=_test_connection)
+            one_code = self.execute_query("SELECT * FROM verification_code LIMIT 1;", connection=_test_connection)
+            if one_user is not None and one_code is not None:
+                return True
+            return False
+        except mysql.connector.errors.ProgrammingError:
+            return False
+        finally:
+            _test_connection.close()
+       
 
     def execute_init_db_sql(self):
         """Execute the init.sql file to set up the database schema"""
