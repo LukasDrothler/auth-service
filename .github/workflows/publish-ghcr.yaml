@@ -8,8 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build and push Docker image to GitHub Container Registry
+      - name: Checkout code
         uses: actions/checkout@v3
+      
+      - name: Build and push Docker image to GitHub Container Registry
         run: |
           docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
           docker build -t ghcr.io/${{ github.repository_owner }}/auth-service:latest .
