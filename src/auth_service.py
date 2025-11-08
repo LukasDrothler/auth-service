@@ -35,7 +35,8 @@ class AuthService:
             _rsa_keys_path = os.environ["RSA_KEYS_DIR"]
             logger.info(f"Using  '{_rsa_keys_path}' from environment variable 'RSA_KEYS_DIR'")
         else:
-            _rsa_keys_path = os.path.join(os.path.dirname(__file__), "keys")
+            # Default to 'keys' directory at project root (parent of src/)
+            _rsa_keys_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "keys")
             logger.info(f"Using default RSA keys directory since 'RSA_KEYS_DIR' not set")
         
         ## create dir if not exists
