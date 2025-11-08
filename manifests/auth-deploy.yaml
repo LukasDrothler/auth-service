@@ -6,7 +6,7 @@ metadata:
     app: auth-service
 
 spec:
-  replicas: 2
+  replicas: 1 
   selector:
     matchLabels:
       app: auth-service
@@ -29,4 +29,32 @@ spec:
                 name: auth-configmap
             - secretRef:
                 name: auth-secret
-            
+          volumeMounts:
+            - name: auth-keys
+              mountPath: /app/keys
+              readOnly: true
+      volumes:
+        - name: auth-keys
+          secret:
+            secretName: auth-secret
+            items:
+              - key: private_key.pem
+                path: private_key.pem
+              - key: public_key.pem
+                path: public_key.pem
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  labels:
+    app: auth-service
+spec:
+  selector:
+    app: auth-service
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30800
