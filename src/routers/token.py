@@ -12,7 +12,7 @@ from src.user_queries import *
 router = APIRouter()
 
 @router.post("/token", response_model=Token, tags=["tokens"])
-async def login_for_access_token(
+def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     auth_service: AuthService = Depends(get_auth_service),
     db_service: DatabaseService = Depends(get_database_service),
@@ -27,7 +27,7 @@ async def login_for_access_token(
 
 
 @router.post("/token/refresh", response_model=Token, tags=["tokens"])
-async def refresh_access_token(
+def refresh_access_token(
     refresh_request: RefreshTokenRequest,
     auth_service: AuthService = Depends(get_auth_service),
     db_service: DatabaseService = Depends(get_database_service),
