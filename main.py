@@ -34,8 +34,8 @@ else:
     
 
 app = FastAPI(
-        title="Auth Service API",
-        description="API for Auth Service",
+        title="Auth Service",
+        description="Authentication service for managing users and tokens",
         docs_url=docs_url,
         redoc_url=redoc_url,
     )
@@ -64,4 +64,4 @@ app.include_router(user.router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host=os.getenv("FASTAPI_HOST", "0.0.0.0"), port=int(os.getenv("FASTAPI_PORT", 8000)), reload=hot_reload)
+    uvicorn.run("main:app", host=os.getenv("AUTH_SVC_HOST", "0.0.0.0"), port=int(os.getenv("AUTH_SVC_PORT", 8000)), reload=hot_reload)
