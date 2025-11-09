@@ -57,6 +57,12 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+class CreateVerificationCodeResponse(BaseModel):
+    """Model for verification code creation response"""
+    username: str
+    email: str
+    value: str
+
 class VerificationCode(BaseModel):
     """Model for email verification codes"""
     user_id: str

@@ -11,7 +11,7 @@ async def read_users_me(current_user: CurrentActiveUser):
     return current_user
 
 
-@router.post("/user/register", status_code=201, tags=["user-registration"])
+@router.post("/user/register", response_model=CreateVerificationCodeResponse, status_code=201, tags=["user-registration"])
 async def create_new_user(
     user: CreateUser,
     auth_service: AuthService = Depends(get_auth_service),

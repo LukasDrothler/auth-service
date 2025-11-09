@@ -1,5 +1,5 @@
 
-from .models import UserInDB, CreateUser, UpdateUser, UpdatePassword, Token
+from .models import CreateVerificationCodeResponse, UserInDB, CreateUser, UpdateUser, UpdatePassword, Token
 from .database_service import DatabaseService
 
 from . import user_queries, verification_code_queries, user_validators
@@ -192,7 +192,7 @@ class AuthService:
         return Token(access_token=access_token)
 
 
-    def register_new_user(self, user: CreateUser, db_service: DatabaseService) -> dict:
+    def register_new_user(self, user: CreateUser, db_service: DatabaseService) -> CreateVerificationCodeResponse:
         """Create a new user"""
         user_validators.validate_new_user(user, db_service)
         hashed_password = self.get_password_hash(user.password)
@@ -211,17 +211,11 @@ class AuthService:
             db_service=db_service,
         )
 
-        logger.info(f"Generated verification code {verification_code} for new user {user.email}")
-        logger.info("Sending verification email...")
-        
-        ## TODO: Add message queue to send emails async
-        # mail_service.send_email_verification_mail(
-        #     recipient=user.email,
-        #     username=user.username,
-        #     verification_code=verification_code,
-        # )
-
-        return {"detail": "User created successfully. Please check your email for a 6-digit verification code."}
+        return CreateVerificationCodeResponse(
+            username=user.username,
+            email=user.email,
+            value=verification_code
+        )
 
 
     def get_current_user(self, token: str, db_service: DatabaseService) -> UserInDB:
