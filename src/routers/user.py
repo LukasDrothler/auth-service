@@ -58,7 +58,7 @@ def get_user_verification_code(
     )
     
 
-@router.post("/internal/user/register", response_model=CreateVerificationCodeResponse, status_code=201, tags=["internal"])
+@router.post("/internal/user/register", response_model=CreateVerificationCodeResponse, status_code=201, tags=["user-registration"])
 def create_new_user_internal(
     user: CreateUser,
     is_internal: IsInternalRequest,
