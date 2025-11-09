@@ -9,6 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from .models import UserInDB
 from .database_service import DatabaseService
 from .auth_service import AuthService
+from .stripe_service import StripeService
 
 
 class DependencyContainer:
@@ -56,6 +57,11 @@ def create_database_service() -> DatabaseService:
     return DatabaseService()
 
 
+def create_stripe_service() -> StripeService:
+    """Factory function to create StripeService instance"""
+    return StripeService()
+
+
 def create_auth_service(
     access_token_expire_minutes: int = 30,
     refresh_token_expire_days: int = 30,
@@ -85,6 +91,7 @@ def setup_dependencies(
     
     # Register singleton instances
     container.register_singleton("database_service", create_database_service())
+    container.register_singleton("stripe_service", create_stripe_service())
 
     # Register AuthService singleton instance
     container.register_singleton(
@@ -107,6 +114,11 @@ def get_auth_service() -> AuthService:
 def get_database_service() -> DatabaseService:
     """FastAPI dependency function to get DatabaseService instance"""
     return container.get("database_service")
+
+
+def get_stripe_service() -> StripeService:
+    """FastAPI dependency function to get StripeService instance"""
+    return container.get("stripe_service")
 
 
 # Create OAuth2 scheme with correct token URL

@@ -32,6 +32,16 @@ spec:
                 secretKeyRef:
                   name: auth-secret
                   key: DB_PASSWORD
+            - name: STRIPE_SECRET_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secret
+                  key: STRIPE_SECRET_API_KEY
+            - name: STRIPE_SIGNING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secret
+                  key: STRIPE_SIGNING_SECRET
             - name: MYSQL_ROOT_HOST
               value: "%"
           volumeMounts:

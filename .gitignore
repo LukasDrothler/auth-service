@@ -210,3 +210,4 @@ __marimo__/
 keys/private_key.pem
 keys/public_key.pem
 manifests/secret.yaml
+stripeconfig.json

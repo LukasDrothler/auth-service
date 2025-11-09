@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.dependencies import *
 import src.routers.token as token
 import src.routers.user as user
+import src.routers.stripe as stripe
 
 import os
 import logging
@@ -61,6 +62,7 @@ app.add_middleware(
 
 app.include_router(token.router)
 app.include_router(user.router)
+app.include_router(stripe.router)
 
 
 if __name__ == "__main__":

@@ -42,6 +42,8 @@ spec:
                 path: private_key.pem
               - key: public_key.pem
                 path: public_key.pem
+              - key: stripeconfig.json
+                path: stripeconfig.json
 ---
 apiVersion: v1
 kind: Service
