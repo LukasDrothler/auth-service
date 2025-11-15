@@ -62,9 +62,8 @@ metadata:
 spec:
   selector:
     app: auth-service
-  type: NodePort
+  clusterIP: None
   ports:
     - protocol: TCP
       port: 8007
       targetPort: 8007
-      nodePort: 30800
