@@ -215,8 +215,8 @@ def get_users_all(
 
 @router.delete("/user/{user_id}", status_code=200, tags=["user-management"])
 def delete_user_by_id(
-    user_id: str,
     current_admin: CurrentAdminUser,
+    user_id: str,
     db_service: DatabaseService = Depends(get_database_service),
 ):
     """Delete a user by ID"""
