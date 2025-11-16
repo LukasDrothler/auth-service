@@ -9,4 +9,5 @@ data:
   DB_USER: root
   AUTH_SVC_HOST: "0.0.0.0"
   AUTH_SVC_PORT: "8007"
-  STRIPE_CONFIG_FILE: "./stripeconfig.json"
+  STRIPE_CONFIG_FILE: "/app/stripeconfig.json"
+  RSA_KEYS_DIR: "/app/keys"
