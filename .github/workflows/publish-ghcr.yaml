@@ -41,7 +41,7 @@ jobs:
       - name: Update Image Tag
         run: |
           # Navigate to the directory containing kustomization.yaml
-          cd finyed/overlays/dev
+          # cd finyed/overlays/dev
           
           # Update the image tag using kustomize
           kustomize edit set image ghcr.io/lukasdrothler/auth-service=ghcr.io/lukasdrothler/auth-service:${{ github.sha }}
