@@ -43,8 +43,8 @@ jobs:
           # Navigate to the directory containing kustomization.yaml
           # cd finyed/overlays/dev
           
-          # Update the image tag using kustomize
-          kustomize edit set image ghcr.io/lukasdrothler/auth-service=ghcr.io/lukasdrothler/auth-service:${{ github.sha }}
+          # Update the image tag using sed
+          sed -i '/name: ghcr.io\/lukasdrothler\/auth-service/,/newTag:/ s|newTag: .*|newTag: ${{ github.sha }}|' finyed/overlays/dev/kustomization.yaml
 
       - name: Commit and Push Changes
         run: |
