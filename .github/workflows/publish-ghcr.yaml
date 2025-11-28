@@ -41,7 +41,7 @@ jobs:
       - name: Update Image Tag
         run: |
           # Navigate to the directory containing kustomization.yaml
-          # cd finyed/overlays/dev
+          cd finyed/overlays/dev
           
           # Update the image tag using sed
           sed -i '/name: ghcr.io\/lukasdrothler\/auth-service/,/newTag:/ s|newTag: .*|newTag: ${{ github.sha }}|' finyed/overlays/dev/kustomization.yaml
