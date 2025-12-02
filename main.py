@@ -1,6 +1,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
 from src.dependencies import setup_dependencies
 import src.routers.token as token
@@ -11,7 +12,6 @@ import os
 import logging
 import uvicorn
 
-from dotenv import load_dotenv
 
 load_dotenv()
 is_dev = False

@@ -1,0 +1,17 @@
+services:
+  auth-service:
+    container_name: auth-service
+    hostname: auth-service
+    build: .
+    ports:
+      - "8007:8007"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=auth-mysql
+    volumes:
+      - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8007 --reload
+
+networks:
+  default:
