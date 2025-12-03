@@ -2,6 +2,7 @@ import os
 import pytest
 from dotenv import load_dotenv
 from src.database_service import DatabaseService
+from src.auth_service import AuthService
 
 # Load environment variables from .env file
 load_dotenv()
@@ -33,3 +34,12 @@ def db_service():
         os.environ["DB_NAME"] = original_db_name
     else:
         del os.environ["DB_NAME"]
+
+
+@pytest.fixture(scope="session")
+def auth_service():
+    """
+    Fixture to provide an AuthService instance.
+    This service is stateless and can be shared across tests.
+    """
+    return AuthService()
