@@ -2,6 +2,7 @@ import pytest
 from fastapi import HTTPException, status
 import jwt
 from src.models import CreateUser, UpdateUser, UpdatePassword
+from src import user_queries
 
 def test_password_hashing(auth_service):
     password = "TestPassword123"
@@ -165,6 +166,20 @@ def test_update_user(auth_service, db_service):
     updated_user = auth_service.authenticate_user("newusername", "TestPassword123", db_service)
     assert updated_user.username == "newusername"
 
+def test_update_user_no_changes(auth_service, db_service):
+    user_data = CreateUser(
+        username="nochangeuser",
+        email="nochange@example.com",
+        password="TestPassword123"
+    )
+    auth_service.register_new_user(user_data, db_service)
+    user = auth_service.authenticate_user("nochangeuser", "TestPassword123", db_service)
+
+    # Update with same data (or None)
+    update_data = UpdateUser(username=None)
+    result = auth_service.update_user(user.id, update_data, db_service)
+    assert result["detail"] == "No changes were made"
+
 def test_update_password(auth_service, db_service):
     user_data = CreateUser(
         username="passuser",
@@ -189,3 +204,44 @@ def test_update_password(auth_service, db_service):
     # Verify old password fails
     with pytest.raises(HTTPException):
         auth_service.authenticate_user("passuser", "OldPassword123", db_service)
+
+def test_update_password_direct(auth_service, db_service):
+    # Test updating password without current password (e.g. admin reset or forgot password flow)
+    user_data = CreateUser(
+        username="resetuser",
+        email="reset@example.com",
+        password="OldPassword123"
+    )
+    auth_service.register_new_user(user_data, db_service)
+    user = auth_service.authenticate_user("resetuser", "OldPassword123", db_service)
+
+    new_password = "ResetPassword123"
+    result = auth_service.update_password(user.id, db_service, new_password=new_password)
+    assert result["detail"] == "Password updated successfully"
+
+    # Verify new password works
+    new_user = auth_service.authenticate_user("resetuser", "ResetPassword123", db_service)
+    assert new_user is not None
+
+def test_get_current_active_user_disabled(auth_service, db_service):
+    user_data = CreateUser(
+        username="disableduser",
+        email="disabled@example.com",
+        password="TestPassword123"
+    )
+    auth_service.register_new_user(user_data, db_service)
+    user = auth_service.authenticate_user("disableduser", "TestPassword123", db_service)
+    
+    # Manually disable user
+    db_service.execute_modification_query(
+        "UPDATE user SET disabled = 1 WHERE id = %s",
+        (user.id,)
+    )
+    
+    # Fetch fresh user object
+    disabled_user = user_queries.get_user_by_id(user.id, db_service)
+    
+    with pytest.raises(HTTPException) as exc:
+        auth_service.get_current_active_user(disabled_user)
+    assert exc.value.status_code == status.HTTP_400_BAD_REQUEST
+    assert exc.value.detail == "Inactive user"

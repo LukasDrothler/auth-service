@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 from src.database_service import DatabaseService
 from src.auth_service import AuthService
-from src.models import VerifyEmailRequest, UpdateForgottenPassword
+from src.models import VerifyEmailRequest, UpdateForgottenPassword, CreateUser
 from src.email_verification import (
     verify_user_email_with_code,
     verify_user_email_change,
@@ -14,14 +14,14 @@ from src.email_verification import (
 from src import user_queries, verification_code_queries
 
 # Helper to create a user and a verification code
-def create_user_and_code(db_service: DatabaseService, username="testuser", email="test@example.com"):
-    user_queries.create_user(username, email, "hashed_password", db_service)
+def create_user_and_code(auth_service: AuthService, db_service: DatabaseService, username="testuser", email="test@example.com"):
+    user_data = CreateUser(username=username, email=email, password="TestPassword123")
+    response = auth_service.register_new_user(user_data, db_service)
     user = user_queries.get_user_by_email(email, db_service)
-    code = verification_code_queries.create_verification_code(user, email, db_service)
-    return user, code
+    return user, response.value
 
-def test_verify_user_email_with_code_success(db_service: DatabaseService):
-    user, code = create_user_and_code(db_service)
+def test_verify_user_email_with_code_success(db_service: DatabaseService, auth_service: AuthService):
+    user, code = create_user_and_code(auth_service, db_service)
     
     request = VerifyEmailRequest(email=user.email, code=code)
     result = verify_user_email_with_code(request, db_service)
@@ -48,8 +48,8 @@ def test_verify_user_email_with_code_no_code_found(db_service: DatabaseService):
     assert excinfo.value.status_code == 400
     assert excinfo.value.detail == "No verification code found for this user"
 
-def test_verify_user_email_with_code_invalid_code(db_service: DatabaseService):
-    user, code = create_user_and_code(db_service)
+def test_verify_user_email_with_code_invalid_code(db_service: DatabaseService, auth_service: AuthService):
+    user, code = create_user_and_code(auth_service, db_service)
     request = VerifyEmailRequest(email=user.email, code="000000") # Wrong code
     
     with pytest.raises(HTTPException) as excinfo:
@@ -57,8 +57,8 @@ def test_verify_user_email_with_code_invalid_code(db_service: DatabaseService):
     assert excinfo.value.status_code == 400
     assert excinfo.value.detail == "Invalid verification code"
 
-def test_verify_user_email_with_code_expired(db_service: DatabaseService):
-    user, code = create_user_and_code(db_service)
+def test_verify_user_email_with_code_expired(db_service: DatabaseService, auth_service: AuthService):
+    user, code = create_user_and_code(auth_service, db_service)
     
     # Manually expire the code
     expired_time = datetime.now(timezone.utc) - timedelta(hours=25)
@@ -74,8 +74,8 @@ def test_verify_user_email_with_code_expired(db_service: DatabaseService):
     assert excinfo.value.status_code == 400
     assert "expired" in excinfo.value.detail
 
-def test_verify_user_email_change_success(db_service: DatabaseService):
-    user, code = create_user_and_code(db_service)
+def test_verify_user_email_change_success(db_service: DatabaseService, auth_service: AuthService):
+    user, code = create_user_and_code(auth_service, db_service)
     new_email = "newemail@example.com"
     
     request = VerifyEmailRequest(email=new_email, code=code)
@@ -86,8 +86,8 @@ def test_verify_user_email_change_success(db_service: DatabaseService):
     updated_user = user_queries.get_user_by_id(user.id, db_service)
     assert updated_user.email == new_email
 
-def test_verify_user_email_change_invalid_format(db_service: DatabaseService):
-    user, code = create_user_and_code(db_service)
+def test_verify_user_email_change_invalid_format(db_service: DatabaseService, auth_service: AuthService):
+    user, code = create_user_and_code(auth_service, db_service)
     request = VerifyEmailRequest(email="invalid-email", code=code)
     
     with pytest.raises(HTTPException) as excinfo:
@@ -95,9 +95,9 @@ def test_verify_user_email_change_invalid_format(db_service: DatabaseService):
     assert excinfo.value.status_code == 400
     assert "Invalid email format" in excinfo.value.detail
 
-def test_verify_user_email_change_email_taken(db_service: DatabaseService):
-    user1, code1 = create_user_and_code(db_service, "user1", "user1@example.com")
-    create_user_and_code(db_service, "user2", "user2@example.com")
+def test_verify_user_email_change_email_taken(db_service: DatabaseService, auth_service: AuthService):
+    user1, code1 = create_user_and_code(auth_service, db_service, "user1", "user1@example.com")
+    create_user_and_code(auth_service, db_service, "user2", "user2@example.com")
     
     request = VerifyEmailRequest(email="user2@example.com", code=code1)
     
@@ -106,8 +106,8 @@ def test_verify_user_email_change_email_taken(db_service: DatabaseService):
     assert excinfo.value.status_code == 409
     assert "Email is already registered" in excinfo.value.detail
 
-def test_verify_forgot_password_with_code_success(db_service: DatabaseService):
-    user, code = create_user_and_code(db_service)
+def test_verify_forgot_password_with_code_success(db_service: DatabaseService, auth_service: AuthService):
+    user, code = create_user_and_code(auth_service, db_service)
     request = VerifyEmailRequest(email=user.email, code=code)
     
     result = verify_forgot_password_with_code(request, db_service)
@@ -118,7 +118,7 @@ def test_verify_forgot_password_with_code_success(db_service: DatabaseService):
     assert verification_record.verified_at is not None
 
 def test_update_forgotten_password_with_code_success(db_service: DatabaseService, auth_service: AuthService):
-    user, code = create_user_and_code(db_service)
+    user, code = create_user_and_code(auth_service, db_service)
     new_password = "NewPassword123!"
     
     update_request = UpdateForgottenPassword(
@@ -140,7 +140,7 @@ def test_update_forgotten_password_with_code_success(db_service: DatabaseService
     assert verification_record.verified_at is not None
 
 def test_update_forgotten_password_with_code_invalid_code(db_service: DatabaseService, auth_service: AuthService):
-    user, code = create_user_and_code(db_service)
+    user, code = create_user_and_code(auth_service, db_service)
     update_request = UpdateForgottenPassword(
         email=user.email,
         new_password="NewPassword123!",
@@ -155,3 +155,17 @@ def test_update_forgotten_password_with_code_invalid_code(db_service: DatabaseSe
     # Verify password was NOT updated
     updated_user = user_queries.get_user_by_id(user.id, db_service)
     assert updated_user.hashed_password == user.hashed_password
+
+def test_verify_user_email_updates_status(db_service: DatabaseService, auth_service: AuthService):
+    """Test that verifying email actually updates the user's email_verified status in DB"""
+    user, code = create_user_and_code(auth_service, db_service, "verify_status_user", "verify_status@example.com")
+    
+    # Verify initial state
+    assert user.email_verified is False
+    
+    request = VerifyEmailRequest(email=user.email, code=code)
+    verify_user_email_with_code(request, db_service)
+    
+    # Fetch user again to check status
+    updated_user = user_queries.get_user_by_id(user.id, db_service)
+    assert updated_user.email_verified is True
