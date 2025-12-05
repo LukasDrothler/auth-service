@@ -1,9 +1,13 @@
 from fastapi.testclient import TestClient
 from main import app
+import pytest
 
-client = TestClient(app)
+@pytest.fixture
+def client(db_service):
+    with TestClient(app) as c:
+        yield c
 
-def test_read_docs():
+def test_read_docs(client):
     # Docs are only enabled if CURRENT_ENV is development, which might not be the case during tests
     # unless we set the env var. 
     # However, we can check if the app initializes correctly.

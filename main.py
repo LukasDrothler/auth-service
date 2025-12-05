@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 
 from src.dependencies import setup_dependencies
 import src.routers.token as token
@@ -32,24 +33,26 @@ else:
     hot_reload = False
     docs_url = None
     redoc_url = None
-    
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    setup_dependencies()
+    yield
+
 
 app = FastAPI(
         title="Auth Service",
         description="Authentication service for managing users and tokens",
         docs_url=docs_url,
         redoc_url=redoc_url,
+        lifespan=lifespan,
     )
 
 logging.basicConfig(
     level=log_level,
     format='%(asctime)s %(levelname)s: %(message)s',
     datefmt='%d-%m-%Y %H:%M:%S'
-)
-
-setup_dependencies(
-    access_token_expire_minutes=30,
-    refresh_token_expire_days=30,
 )
 
 app.add_middleware(

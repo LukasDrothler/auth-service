@@ -29,10 +29,14 @@ class AuthService:
                  token_url="token",
                  private_key_filename: str = "private_key.pem",
                  public_key_filename: str = "public_key.pem",
+                 keys_dir: str = None
                  ):
         
         """Initialize the authentication configuration"""
-        if "RSA_KEYS_DIR" in os.environ:
+        if keys_dir is not None:
+            _rsa_keys_path = keys_dir
+            logger.info(f"Using  '{_rsa_keys_path}' from provided keys_dir argument")
+        elif "RSA_KEYS_DIR" in os.environ:
             _rsa_keys_path = os.environ["RSA_KEYS_DIR"]
             logger.info(f"Using  '{_rsa_keys_path}' from environment variable 'RSA_KEYS_DIR'")
         else:

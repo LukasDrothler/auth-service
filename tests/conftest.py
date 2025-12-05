@@ -1,6 +1,7 @@
 import os
 import pytest
 from dotenv import load_dotenv
+from testcontainers.mysql import MySqlContainer
 from src.database_service import DatabaseService
 from src.auth_service import AuthService
 
@@ -10,17 +11,31 @@ load_dotenv()
 # Set the RSA_KEYS_DIR to a local directory for tests
 # This must be done before importing main, as main loads .env
 os.environ["RSA_KEYS_DIR"] = os.path.join(os.path.dirname(os.path.dirname(__file__)), "keys")
+if not os.path.exists(os.environ["RSA_KEYS_DIR"]):
+    os.makedirs(os.environ["RSA_KEYS_DIR"])
+
+
+@pytest.fixture(scope="session")
+def mysql_container():
+    """
+    Fixture to provide a MySQL container.
+    """
+    with MySqlContainer("mysql:8.3", dbname="auth_test") as mysql:
+        yield mysql
 
 
 @pytest.fixture(scope="function")
-def db_service():
+def db_service(mysql_container):
     """
     Fixture to provide a DatabaseService instance connected to a test database.
     This fixture ensures the test database is initialized and clean before each test.
     """
-    # Set the database name to a test database
-    original_db_name = os.environ.get("DB_NAME")
-    os.environ["DB_NAME"] = "auth_test"
+    # Set environment variables to point to the container
+    os.environ["DB_HOST"] = mysql_container.get_container_host_ip()
+    os.environ["DB_PORT"] = str(mysql_container.get_exposed_port(3306))
+    os.environ["DB_USER"] = mysql_container.username
+    os.environ["DB_PASSWORD"] = mysql_container.password
+    os.environ["DB_NAME"] = mysql_container.dbname
 
     service = DatabaseService()
 
@@ -28,12 +43,6 @@ def db_service():
     service.execute_init_db_sql()
 
     yield service
-
-    # Restore original environment variable
-    if original_db_name:
-        os.environ["DB_NAME"] = original_db_name
-    else:
-        del os.environ["DB_NAME"]
 
 
 @pytest.fixture(scope="session")
