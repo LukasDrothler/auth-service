@@ -4,8 +4,8 @@ from typing import Annotated
 
 
 from src.dependencies import get_auth_service, get_database_service
-from src.auth_service import AuthService
-from src.database_service import DatabaseService
+from services.auth_service import AuthService
+from services.database_service import DatabaseService
 from src.models import Token, RefreshTokenRequest
 
 router = APIRouter()

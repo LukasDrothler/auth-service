@@ -1,6 +1,6 @@
 import pytest
 from fastapi import HTTPException
-from src.database_service import DatabaseService
+from services.database_service import DatabaseService
 from src.models import UpdateUser
 from src.user_queries import (
     get_user_by_id,

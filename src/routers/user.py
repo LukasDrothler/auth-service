@@ -4,9 +4,9 @@ from src.dependencies import get_auth_service, get_database_service, get_rmq_ser
 from src.models import User, CreateUser, UpdateUser, UpdatePassword, VerifyEmailRequest, CreateVerificationCodeResponse, UpdateForgottenPassword, UserInDBNoPassword
 from src.user_queries import get_all_users, delete_user
 from src.email_verification import verify_user_email_with_code, verify_user_email_change, verify_forgot_password_with_code, update_forgotten_password_with_code
-from src.auth_service import AuthService
-from src.rmq_service import RabbitMQService
-from src.database_service import DatabaseService
+from services.auth_service import AuthService
+from services.rmq_service import RabbitMQService
+from services.database_service import DatabaseService
 
 from src import verification_code_queries
 from src import user_queries

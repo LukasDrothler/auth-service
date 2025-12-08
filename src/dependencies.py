@@ -6,10 +6,10 @@ from fastapi import Depends, Header
 from fastapi.security import OAuth2PasswordBearer
 
 from src.models import UserInDB
-from src.database_service import DatabaseService
-from src.auth_service import AuthService
-from src.stripe_service import StripeService
-from src.rmq_service import RabbitMQService
+from services.database_service import DatabaseService
+from services.auth_service import AuthService
+from services.stripe_service import StripeService
+from services.rmq_service import RabbitMQService
 
 import os
 

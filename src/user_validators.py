@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import HTTPException, status
 
 from src.models import CreateUser, UpdateUser, UpdatePassword
-from src.database_service import DatabaseService
+from services.database_service import DatabaseService
 from src import user_queries
 
 import re

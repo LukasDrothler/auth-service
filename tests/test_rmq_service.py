@@ -1,6 +1,6 @@
 import json
 import pytest
-from src.rmq_service import TemplateName
+from services.rmq_service import TemplateName
 
 def test_publish_verify_mail_request(rmq_service):
     """
