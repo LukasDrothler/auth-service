@@ -212,7 +212,7 @@ def verify_user_email_change(user: UserInDB, verify_request: VerifyEmailRequest,
     user_validators.validate_email_unique(verify_request.email, db_service)
     verification_code_queries.update_user_email(user.id, verify_request.email, db_service)
     
-    _use_verification_code (user.id, db_service)
+    _use_verification_code(user.id, db_service)
     
     return {"detail": "Email address updated successfully"}
 
