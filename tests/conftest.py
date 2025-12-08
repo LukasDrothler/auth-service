@@ -71,12 +71,13 @@ def rmq_service(rabbitmq_container):
     os.environ["RABBITMQ_USERNAME"] = rabbitmq_container.username
     os.environ["RABBITMQ_PASSWORD"] = rabbitmq_container.password
     os.environ["RABBITMQ_MAIL_QUEUE_NAME"] = "test-mail-queue"
-    try:
-        return RabbitMQService()
-    finally:
-        # Restore old environment variables
-        os.environ.clear()
-        os.environ.update(old_environ)
+    
+    service = RabbitMQService()
+    yield service
+    
+    # Restore old environment variables
+    os.environ.clear()
+    os.environ.update(old_environ)
 
 
 
