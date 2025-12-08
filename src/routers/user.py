@@ -1,15 +1,35 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.dependencies import get_auth_service, get_database_service, get_rmq_service, CurrentActiveUser, CurrentAdminUser, IsInternalRequest
-from src.models import SendVerificationRequest, User, CreateUser, UpdateUser, UpdatePassword, VerifyEmailRequest, CreateVerificationCodeResponse, UpdateForgottenPassword, UserInDBNoPassword
-from src.user_queries import get_all_users, delete_user
-from src.email_verification import verify_user_email_with_code, verify_user_email_change, verify_forgot_password_with_code, update_forgotten_password_with_code, resend_verification_code, send_email_change_verification, send_forgot_password_verification
 from src.services.auth_service import AuthService
 from src.services.rmq_service import RabbitMQService
 from src.services.database_service import DatabaseService
 
-from src import verification_code_queries
-from src import user_queries
+from src import (
+    verification_code_queries,
+    user_queries,
+    email_verification,
+)
+
+from src.models import (
+ SendVerificationRequest,
+ User,
+ CreateUser,
+ UpdateUser,
+ UpdatePassword,
+ VerifyEmailRequest,
+ CreateVerificationCodeResponse,
+ UpdateForgottenPassword,
+ UserInDBNoPassword
+)
+
+from src.dependencies import (
+    get_auth_service,
+    get_database_service,
+    get_rmq_service,
+    CurrentActiveUser,
+    CurrentAdminUser,
+    IsInternalRequest,
+)
 
 router = APIRouter()
 
@@ -89,7 +109,7 @@ def verify_user_email(
     verify_request: VerifyEmailRequest,
     db_service: DatabaseService = Depends(get_database_service),
 ):
-    return verify_user_email_with_code(
+    return email_verification.verify_user_email_with_code(
         verify_request=verify_request,
         db_service=db_service, 
         )
@@ -102,7 +122,7 @@ def send_new_verification_code(
     auth_service: AuthService = Depends(get_auth_service),
     rmq_service: RabbitMQService = Depends(get_rmq_service),
 ):
-    return resend_verification_code(
+    return email_verification.resend_verification_code(
         email=send_verification_request.email,
         db_service=db_service,
         auth_service=auth_service,
@@ -149,7 +169,7 @@ def request_user_email_change(
     rmq_service: RabbitMQService = Depends(get_rmq_service),
 ):
     """Initiate email change process - sends verification code to new email"""
-    return send_email_change_verification(
+    return email_verification.send_email_change_verification(
         user=current_user,
         new_email=send_verification_request.email,
         db_service=db_service,
@@ -165,7 +185,7 @@ def user_email_change_verification(
     db_service: DatabaseService = Depends(get_database_service),
 ):
     """Verify email change with 6-digit code and update user's email"""
-    return verify_user_email_change(
+    return email_verification.verify_user_email_change(
         user=current_user,
         verify_request=verify_request,
         db_service=db_service,
@@ -179,7 +199,7 @@ def request_forgot_password(
     auth_service: AuthService = Depends(get_auth_service),
     rmq_service: RabbitMQService = Depends(get_rmq_service),
 ):
-    return send_forgot_password_verification(
+    return email_verification.send_forgot_password_verification(
         email=send_verification_request.email,
         db_service=db_service,
         auth_service=auth_service,
@@ -193,7 +213,7 @@ def forgot_password_verification(
     db_service: DatabaseService = Depends(get_database_service),
 ):
     """Verify email change with 6-digit code and update user's email"""
-    return verify_forgot_password_with_code(
+    return email_verification.verify_forgot_password_with_code(
         verify_request=verify_request,
         db_service=db_service,
         )
@@ -206,7 +226,7 @@ def change_forgotten_password(
     db_service: DatabaseService = Depends(get_database_service),
 ):
     """Verify email change with 6-digit code and update user's email"""
-    return update_forgotten_password_with_code(
+    return email_verification.update_forgotten_password_with_code(
         update_forgotten_password=update_forgotten_password,
         auth_service=auth_service,
         db_service=db_service,
@@ -233,7 +253,7 @@ def get_users_all(
     """Get all users from the database"""
     if not current_admin.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    return get_all_users(db_service=db_service)
+    return user_queries.get_all_users(db_service=db_service)
 
 
 @router.delete("/user/{user_id}", status_code=200, tags=["user-management"])
@@ -246,7 +266,7 @@ def delete_user_by_id(
     if not current_admin.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     
-    return delete_user(
+    return user_queries.delete_user(
         user_id=user_id,
         db_service=db_service,
     )
