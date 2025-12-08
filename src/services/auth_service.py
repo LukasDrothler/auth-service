@@ -1,6 +1,6 @@
 
 from src.models import CreateVerificationCodeResponse, UserInDB, CreateUser, UpdateUser, UpdatePassword, Token, TokenData
-from services.database_service import DatabaseService
+from src.services.database_service import DatabaseService
 
 from src import user_queries, verification_code_queries, user_validators
 

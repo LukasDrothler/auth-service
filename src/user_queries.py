@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import HTTPException, status
 
 from src.models import UserInDBNoPassword, UserInDB, UpdateUser
-from services.database_service import DatabaseService
+from src.services.database_service import DatabaseService
 
 import logging
 

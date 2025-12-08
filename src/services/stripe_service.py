@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status, Request, Header
 
 from src import user_queries
-from services.database_service import DatabaseService
+from src.services.database_service import DatabaseService
 
 import logging
 import os

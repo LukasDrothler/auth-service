@@ -3,9 +3,9 @@ import pytest
 from dotenv import load_dotenv
 from testcontainers.mysql import MySqlContainer
 from testcontainers.rabbitmq import RabbitMqContainer
-from services.database_service import DatabaseService
-from services.auth_service import AuthService
-from services.rmq_service import RabbitMQService
+from src.services.database_service import DatabaseService
+from src.services.auth_service import AuthService
+from src.services.rmq_service import RabbitMQService
 
 # Load environment variables from .env file
 load_dotenv()

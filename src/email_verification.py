@@ -4,9 +4,9 @@ from datetime import datetime, timezone, timedelta
 
 from fastapi import HTTPException, status
 
-from services.auth_service import AuthService
+from src.services.auth_service import AuthService
 from src.models import UpdateForgottenPassword, UserInDB, VerifyEmailRequest
-from services.database_service import DatabaseService
+from src.services.database_service import DatabaseService
 from src import user_queries, verification_code_queries, user_validators
 
 def _check_verification_code(user: Optional[UserInDB], code: str, db_service: DatabaseService) -> UserInDB:

@@ -6,7 +6,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from src.models import UserInDB, VerificationCode
-from services.database_service import DatabaseService
+from src.services.database_service import DatabaseService
 from src import user_queries
 
 import secrets

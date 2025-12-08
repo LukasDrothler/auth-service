@@ -5,7 +5,7 @@ from src.user_queries import (
     get_user_by_username,
     create_user
 )
-from services.database_service import DatabaseService
+from src.services.database_service import DatabaseService
 
 def test_database_connection(db_service: DatabaseService):
     """Test that the database service can connect and execute queries"""

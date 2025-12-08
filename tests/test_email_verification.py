@@ -2,8 +2,8 @@ import pytest
 from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 
-from services.database_service import DatabaseService
-from services.auth_service import AuthService
+from src.services.database_service import DatabaseService
+from src.services.auth_service import AuthService
 from src.models import VerifyEmailRequest, UpdateForgottenPassword, CreateUser
 from src.email_verification import (
     verify_user_email_with_code,
