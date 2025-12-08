@@ -86,14 +86,13 @@ def check_can_send_verification(user: Optional[UserInDB], db_service: DatabaseSe
     
     created_at = existing_code['created_at']
     
-    if not "ENVIRONMENT" in os.environ or not os.environ["ENVIRONMENT"] == "development":
-        # Check if 1 minute has passed since last code generation
-        time_diff = datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)
-        if time_diff <= timedelta(minutes=1):
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Please wait before requesting another verification code.",
-            )
+    # Check if 1 minute has passed since last code generation
+    time_diff = datetime.now(timezone.utc) - created_at.replace(tzinfo=timezone.utc)
+    if time_diff <= timedelta(minutes=1):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Please wait a minute before requesting another verification code.",
+        )
     return None
 
 
