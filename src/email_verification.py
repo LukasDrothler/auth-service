@@ -190,7 +190,8 @@ def verify_forgot_password_with_code(verify_request: VerifyEmailRequest, db_serv
     user = user_queries.get_user_by_email(email=verify_request.email, db_service=db_service)
     _check_verification_code(user, verify_request.code, db_service)
 
-    _use_verification_code (user.id, db_service)
+    # Do not mark code as used yet, this will be done after password is updated
+    # _use_verification_code (user.id, db_service)
     
     return {"detail": "E-Mail successfully verified. You can now reset your password."}
 

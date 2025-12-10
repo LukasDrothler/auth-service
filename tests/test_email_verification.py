@@ -112,10 +112,6 @@ def test_verify_forgot_password_with_code_success(db_service: DatabaseService, a
     
     result = verify_forgot_password_with_code(request, db_service)
     assert result == {"detail": "E-Mail successfully verified. You can now reset your password."}
-    
-    # Check if code is marked as used
-    verification_record = verification_code_queries.get_verification_code_by_user_id(user.id, db_service)
-    assert verification_record.verified_at is not None
 
 def test_update_forgotten_password_with_code_success(db_service: DatabaseService, auth_service: AuthService):
     user, code = create_user_and_code(auth_service, db_service)
