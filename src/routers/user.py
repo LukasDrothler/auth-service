@@ -27,8 +27,7 @@ from src.dependencies import (
     get_database_service,
     get_rmq_service,
     CurrentActiveUser,
-    CurrentAdminUser,
-    IsInternalRequest,
+    CurrentAdminUser
 )
 
 router = APIRouter()
@@ -55,53 +54,6 @@ def create_new_user(
 
     return {"detail": "User registered successfully. Please check your email for the verification code."}
 
-
-@router.get("/internal/user/{user_id}/verification-code", response_model=CreateVerificationCodeResponse, tags=["user-registration"])
-def get_user_verification_code(
-    user_id: str,
-    is_internal: IsInternalRequest,
-    db_service: DatabaseService = Depends(get_database_service),
-):
-    if not is_internal:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="This endpoint requires internal API key authentication"
-        )
-
-    user = user_queries.get_user_by_id(user_id, db_service)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
-    verification_code =  verification_code_queries.get_verification_code_by_user_id(user_id, db_service)
-    if not verification_code:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Verification code not found for the specified user ID"
-        )
-    
-    return CreateVerificationCodeResponse(
-        verification_code=verification_code.value,
-        username=user.username,
-        email=user.email
-    )
-    
-
-@router.post("/internal/user/register", response_model=CreateVerificationCodeResponse, status_code=201, tags=["user-registration"])
-def create_new_user_internal(
-    user: CreateUser,
-    is_internal: IsInternalRequest,
-    auth_service: AuthService = Depends(get_auth_service),
-    db_service: DatabaseService = Depends(get_database_service),
-):
-    if not is_internal:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="This endpoint requires internal API key authentication"
-        )
-    return auth_service.register_new_user(user=user, db_service=db_service)
 
 
 @router.post("/user/verify-email", status_code=200, tags=["user-registration"])

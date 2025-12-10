@@ -56,8 +56,6 @@ STRIPE_SECRET_API_KEY=sk_test_xxxxx
 STRIPE_SIGNING_SECRET=whsec_xxxxx
 STRIPE_CONFIG_FILE=path/to/stripe_config.json
 
-# Internal Service Authentication (optional)
-INTERNAL_API_KEY=your_secure_api_key_here
 ```
 
 4. **Configure Stripe** (optional):
@@ -108,8 +106,6 @@ python main.py
 - `POST /stripe-webhook` - Handle Stripe webhook events (checkout completion, subscription changes)
 - `POST /create-customer-portal-session` - Create Stripe customer portal session for subscription management
 
-### Internal Endpoints (require X-API-Key header)
-- `POST /internal/user/register` - Create new user account (returns verification code for internal services)
 
 ## Docker Deployment
 
@@ -117,21 +113,6 @@ Build and run with Docker:
 ```bash
 docker build -t auth-service .
 docker run -p 8007:8007 --env-file .env auth-service
-```
-
-## Internal vs External Usage
-
-This service supports both internal (service-to-service) and external (public-facing) deployments:
-
-- **Internal requests**: Include `X-API-Key` header with the configured `INTERNAL_API_KEY` to receive detailed responses (e.g., verification codes)
-- **External requests**: Without the API key, sensitive information is hidden and generic success messages are returned
-
-Example internal request:
-```bash
-curl -X POST https://auth-service/internal/user/register \
-  -H "X-API-Key: your_secure_api_key_here" \
-  -H "Content-Type: application/json" \
-  -d '{"username":"user","email":"user@example.com","password":"pass123"}'
 ```
 
 ## Development
