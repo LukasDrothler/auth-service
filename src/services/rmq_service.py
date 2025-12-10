@@ -39,21 +39,24 @@ class RabbitMQService:
             raise ValueError("RABBITMQ_PASSWORD environment variable is required")
 
         # Connect to RabbitMQ with retry logic
-        self.connection = self._connect_with_retry()
+        self.connect()
 
+
+    ## close connection when instance is deleted
+    def __exit__(self):
+        if self.connection and not self.connection.is_closed:
+            self.connection.close()
+            logger.info('RabbitMQ Provider connection closed.')
+
+    def connect(self):
+        """Establish connection and channel"""
+        self.connection = self._connect_with_retry()
         self.channel = self.connection.channel()
         self.channel.queue_declare(
             queue=self.mail_queue_name, 
             durable=True,
             arguments={"x-dead-letter-exchange": f"{self.mail_queue_name}_dlx"}
         )
-
-
-    ## close connection when instance is deleted
-    def __exit__(self):
-        self.connection.close()
-        logger.info('RabbitMQ Provider connection closed.')
-
 
     def _connect_with_retry(self, max_retries=10, retry_delay=5) -> pika.BlockingConnection:
         """Connect to RabbitMQ with retry logic for container startup"""
@@ -83,6 +86,10 @@ class RabbitMQService:
     def _publish_message(self, message: dict) -> None:
         """Publish a message to the RabbitMQ queue"""
         try:
+            if not self.connection or self.connection.is_closed:
+                logger.info("Connection is closed, reconnecting...")
+                self.connect()
+
             self.channel.basic_publish(
                 exchange='',
                 routing_key=self.mail_queue_name,
@@ -92,6 +99,22 @@ class RabbitMQService:
                     delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
                     )
             )
+        except (pika.exceptions.AMQPConnectionError, pika.exceptions.StreamLostError) as e:
+            logger.warning(f"Failed to publish message due to connection error: {e}. Reconnecting and retrying...")
+            try:
+                self.connect()
+                self.channel.basic_publish(
+                    exchange='',
+                    routing_key=self.mail_queue_name,
+                    body=json.dumps(message),
+                    properties=pika.BasicProperties(
+                        content_type='application/json',
+                        delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
+                        )
+                )
+            except Exception as retry_e:
+                logger.error(f"Failed to publish message after retry: {retry_e}")
+                raise
         except Exception as e:
             logger.error(f"Failed to publish message to RabbitMQ: {e}")
             raise
